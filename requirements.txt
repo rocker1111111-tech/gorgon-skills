@@ -1,2 +1,3 @@
 python-hwpx>=2.6
 lxml
+reportlab
