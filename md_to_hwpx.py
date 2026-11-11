@@ -32,12 +32,14 @@ def resolve_file(p):
         cands.append(os.path.join(os.getcwd(), p))
         for root in WIKI_ROOTS + [WS_ROOT]:
             cands.append(os.path.join(root, p))
+        norm = p.replace('\\', '/').strip('/')
         for root in WIKI_ROOTS:
             if os.path.isdir(root):
-                for sub in sorted(os.listdir(root)):
-                    d = os.path.join(root, sub)
-                    if os.path.isdir(d):
-                        cands.append(os.path.join(d, p))
+                for dirpath, _dirs, files in os.walk(root):
+                    for f in files:
+                        fp = os.path.relpath(os.path.join(dirpath, f), root).replace('\\', '/')
+                        if fp == norm or fp.endswith('/' + norm):
+                            cands.append(os.path.join(dirpath, f))
     for c in cands:
         try:
             if os.path.isfile(c):
