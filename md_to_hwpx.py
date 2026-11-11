@@ -54,10 +54,10 @@ def find_source(arg):
     hit = resolve_file(arg)
     if hit and hit.lower().endswith(('.md', '.markdown', '.txt')):
         return Path(hit).read_text(encoding='utf-8-sig'), Path(hit).stem
+    if '\n' in arg or len(arg) > 400:
+        return arg, '직접입력'
     if PATHLIKE.search(arg):
         raise SystemExit('원본 파일을 찾지 못했습니다: ' + arg[:200])
-    if '\n' in arg or len(arg) > 3:
-        return arg, '직접입력'
     raise SystemExit('원본을 찾지 못했습니다: ' + arg[:120])
 
 
