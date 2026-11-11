@@ -63,6 +63,7 @@ def main():
 
     story = []
     n_img = n_ph = 0
+    temps = []
     for kind, payload in blocks:
         if kind == 'h1':
             story.append(Paragraph(payload, S['h1']))
@@ -92,13 +93,25 @@ def main():
             caption = payload['caption'] or payload['prompt'] or ''
             if src:
                 try:
-                    ir = ImageReader(src)
+                    from md_to_hwpx import shrink_image
+                    fmt0 = 'png' if Path(src).suffix.lower().lstrip('.') == 'png' else 'jpg'
+                    raw = Path(src).read_bytes()
+                    data, fmt0 = shrink_image(raw, fmt0)
+                    use = src
+                    if data is not raw:
+                        import tempfile
+                        tf = tempfile.NamedTemporaryFile(delete=False, suffix='.png' if fmt0 == 'png' else '.jpg')
+                        tf.write(data)
+                        tf.close()
+                        use = tf.name
+                        temps.append(use)
+                    ir = ImageReader(use)
                     iw, ih = ir.getSize()
                     w = min(15 * cm, A4[0] - 4 * cm)
                     h = w * ih / iw
                     if h > 22 * cm:
                         h = 22 * cm; w = h * iw / ih
-                    story.append(RLImage(src, width=w, height=h))
+                    story.append(RLImage(use, width=w, height=h))
                     if caption:
                         story.append(Paragraph('▲ ' + caption, S['caption']))
                     n_img += 1
@@ -119,6 +132,11 @@ def main():
                             topMargin=2 * cm, bottomMargin=2 * cm,
                             title=name)
     doc.build(story)
+    for tmp in temps:
+        try:
+            Path(tmp).unlink()
+        except OSError:
+            pass
     size = out_path.stat().st_size
     print('변환 완료: ' + out_path.name)
     print('크기: %d바이트' % size)

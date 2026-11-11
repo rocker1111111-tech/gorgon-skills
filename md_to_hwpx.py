@@ -151,6 +151,32 @@ def image_size(data, fmt):
     return 1344, 768
 
 
+def shrink_image(data, fmt):
+    """큰 사진을 최대 폭 1200px로 축소·압축해 문서 용량을 줄인다(원본 파일은 변경하지 않음).
+    축소·압축이 실패하거나 이득이 없으면 원본을 그대로 돌려준다."""
+    try:
+        import io
+        from PIL import Image
+        im = Image.open(io.BytesIO(data))
+        if im.width <= 1200 and len(data) <= 400 * 1024:
+            return data, fmt
+        if im.width > 1200:
+            im = im.resize((1200, max(1, round(im.height * 1200.0 / im.width))))
+        has_alpha = im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info)
+        buf = io.BytesIO()
+        if fmt == 'png' and has_alpha:
+            im.save(buf, format='PNG', optimize=True)
+        else:
+            im.convert('RGB').save(buf, format='JPEG', quality=85)
+            fmt = 'jpg'
+        out = buf.getvalue()
+        if len(out) < len(data):
+            return out, fmt
+        return data, fmt
+    except Exception:
+        return data, fmt
+
+
 FMT = {'png': 'png', 'jpg': 'jpg', 'jpeg': 'jpg', 'gif': 'gif', 'bmp': 'bmp'}
 
 
@@ -192,6 +218,7 @@ def main():
                 fmt = FMT.get(Path(src).suffix.lower().lstrip('.'))
                 if fmt:
                     data = Path(src).read_bytes()
+                    data, fmt = shrink_image(data, fmt)
                     iw, ih = image_size(data, fmt)
                     w_mm = 140.0
                     h_mm = min(180.0, w_mm * ih / iw)

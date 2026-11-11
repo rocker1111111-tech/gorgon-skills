@@ -14,7 +14,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-from md_to_hwpx import find_source, image_size, parse_markdown, resolve_file
+from md_to_hwpx import find_source, image_size, parse_markdown, resolve_file, shrink_image
 
 EMU_PX = 9525
 W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
@@ -139,6 +139,7 @@ def main():
                 fmt = FMT_EXT.get(Path(src).suffix.lower().lstrip('.'))
                 if fmt:
                     data = Path(src).read_bytes()
+                    data, fmt = shrink_image(data, fmt)
                     iw, ih = image_size(data, 'jpg' if fmt == 'jpg' else fmt)
                     idx += 1
                     rid = 'rIdImg%d' % idx
