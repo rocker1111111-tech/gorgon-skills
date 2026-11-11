@@ -1,3 +1,4 @@
 python-hwpx>=2.6
 lxml
 reportlab
+Pillow>=10.0

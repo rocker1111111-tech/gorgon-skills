@@ -98,7 +98,7 @@ def main():
                     h = w * ih / iw
                     if h > 22 * cm:
                         h = 22 * cm; w = h * iw / ih
-                    story.append(RLImage(ir, width=w, height=h))
+                    story.append(RLImage(src, width=w, height=h))
                     if caption:
                         story.append(Paragraph('▲ ' + caption, S['caption']))
                     n_img += 1

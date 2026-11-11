@@ -14,7 +14,7 @@ description: "마크다운 원고를 한글 문서(.hwpx)·워드(.docx)·PDF로
 |---|---|
 | `md_to_hwpx.py` | 마크다운 → 한글 HWPX 조판 |
 | `md_to_docx.py` | 마크다운 → 워드 DOCX 조판 (같은 규약) |
-| `md_to_pdf.py` | 마크다운 → A4 PDF 조판 (같은 규약) |
+| `md_to_pdf.py` | 마크다운 → A4 PDF 조판 (같은 규약·사진 삽입 지원) |
 | `moss_generate.py` | 영문 프롬프트 → moss 이미지 PNG 생성 (기본 25스텝, NSFW 차단 네거티브 내장) |
 
 ## 사용법
@@ -30,7 +30,7 @@ description: "마크다운 원고를 한글 문서(.hwpx)·워드(.docx)·PDF로
 
 moss 사진 생성(약 8분 소요). 실행 제한(30초) 환경에서는 2단계 흐름을 쓴다.
 1. 제출: `moss_generate.py "프롬프트(영문)" --out 사진이름` — prompt_id가 출력되며 접수는 서버에 남아 계속 생성된다(강제 종료돼도 무관).
-2. 회수: 1~2분 후 `moss_generate.py --recover PROMPT_ID --out 사진이름` 를 반복 실행(수 초). "아직 생성 중"이 나오면 다시 실행. 과거 접수도 언제든 회수 가능.
+2. 회수: 1~2분 후 `moss_generate.py --recover PROMPT_ID --out 사진이름` 를 반복 실행(수 초). "대기/실행 중"이면 완료(약 8~13분) 후 다시. --out에 .png를 붙여도 자동 정규화된다.
 완료까지 기다릴 수 있는 환경이면 1번 명령이 끝까지 기다렸다가 PNG를 저장한다. MOSS_URL 환경변수로 서버 주소 변경 가능(기본 `http://100.108.60.5:8188`).
 
 ## 조판 규약 (마크다운 작성 시)

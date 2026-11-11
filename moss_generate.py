@@ -45,11 +45,25 @@ def save_image(fname, subfolder, ftype, out):
     data = urllib.request.urlopen(url).read()
     out_dir = os.path.join(os.getcwd(), "output")
     os.makedirs(out_dir, exist_ok=True)
-    base = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "_", out or fname)[:80]
+    name0 = re.sub(r'\.png$', '', out or fname, flags=re.I)
+    base = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "_", name0)[:80]
     out_path = os.path.join(out_dir, base + ".png")
     with open(out_path, "wb") as f:
         f.write(data)
     return out_path, len(data)
+
+
+def in_queue(pid):
+    """접수가 대기·실행 중인지 확인(히스토리는 완료 시점에만 생긴다)."""
+    try:
+        q = get_json("/queue")
+    except Exception:
+        return False
+    for key in ("queue_running", "queue_pending"):
+        for item in q.get(key, []) or []:
+            if isinstance(item, (list, tuple)) and len(item) > 1 and item[1] == pid:
+                return True
+    return False
 
 
 def find_outputs(pid):
@@ -66,7 +80,11 @@ def find_outputs(pid):
 def recover(pid, out):
     hit = find_outputs(pid.strip())
     if hit is None:
-        print("접수 기록 없음: %s" % pid); sys.exit(2)
+        if in_queue(pid.strip()):
+            print("대기/실행 중 — 생성 완료(접수 후 약 8~13분) 후 같은 명령으로 회수하세요.")
+            sys.exit(3)
+        print("접수 기록 없음 — 완료 예상 시점(+8분)에 다시 시도하거나 재접수하세요.")
+        sys.exit(2)
     if not hit:
         print("아직 생성 중 — 1~2분 후 같은 명령을 다시 실행하세요."); sys.exit(3)
     path, size = save_image(*hit, out)
