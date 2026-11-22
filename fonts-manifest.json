@@ -1,0 +1,20 @@
+[
+  {
+    "name": "NanumGothic-Bold.ttf",
+    "sha": "79a9bdc1fa190b5786b247bb5db6a00893e620fb",
+    "size": 2073868,
+    "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-Bold.ttf"
+  },
+  {
+    "name": "NanumGothic-Regular.ttf",
+    "sha": "2aa2b20905b4136808a0126d8e36e5c0f576715c",
+    "size": 2054744,
+    "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/NanumGothic-Regular.ttf"
+  },
+  {
+    "name": "OFL.txt",
+    "sha": "69ff40157d0bba4c65e4ecf77564e1f01d0b02a5",
+    "size": 4534,
+    "download_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/nanumgothic/OFL.txt"
+  }
+]
