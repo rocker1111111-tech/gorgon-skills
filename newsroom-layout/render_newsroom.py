@@ -101,6 +101,15 @@ def build(source,output,style_name,fonts,roots,label='르테 뉴스 편집국'):
     styles['title'].wordWrap=None
     styles['title'].splitLongWords=False
     titlep=Paragraph(inline(title),styles['title']);_,th=titlep.wrap(full,1000)
+    if ts*1.25<th<=ts*2.51:
+        candidates=[]
+        for split in (m.start() for m in re.finditer(' ',title)):
+            left,right=title[:split],title[split+1:]
+            lw=pdfmetrics.stringWidth(left,'NB',ts);rw=pdfmetrics.stringWidth(right,'NB',ts)
+            if max(lw,rw)<=full:candidates.append((abs(lw-rw),left,right))
+        if candidates:
+            _,left,right=min(candidates)
+            titlep=Paragraph(inline(left)+'<br/>'+inline(right),styles['title']);_,th=titlep.wrap(full,1000)
     first_top=h-118-th
     if first_top<200:raise ValueError('제목이 너무 길어 본문 공간이 부족합니다.')
     def canvas_header(c,doc):
