@@ -19,6 +19,7 @@ from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, 
 from reportlab.platypus.flowables import BalancedColumns, KeepInFrame
 
 INTERNAL_NOTE_RE=re.compile(r'^\s*[(【\[]?\s*(이미지\s*생성|이미지\s*생성용|생성)\s*프롬프트|^\s*(프롬프트|prompt)\s*[:：]|^\s*내부\s*(지시|메모|기록|참고)')
+PRODUCTION_DIRECTIVE_RE=re.compile(r'^\s*(?:#{1,6}\s*)?(?:\*\*)?[\[【〔]\s*(?:이미지|사진)\s*(?:생성\s*)?(?:지시|프롬프트)\s*[\]】〕]')
 
 def parse(text):
     lines=text.replace('\r\n','\n').splitlines(); result=[]; i=0
@@ -133,6 +134,8 @@ def keep_headings(flowables,width,max_height):
 def build(source,output,style_name,fonts,roots,label='르테 뉴스 편집국'):
     text=source.read_text(encoding='utf-8-sig')
     if not text.strip() or len(text)>256000:raise ValueError('원고가 비었거나 256KB 한도를 넘습니다.')
+    if any(PRODUCTION_DIRECTIVE_RE.match(ln) for ln in text.splitlines()):
+        raise ValueError('독자 원고에 [이미지 지시]/[사진 지시] 제작 표식이 있습니다. 해당 제작 문단 전체를 별도 내부 기록으로 옮기고 독자 원고에서 제거하세요. 표식만 지우거나 다른 지면에 인쇄하지 마세요.')
     blocks=parse(text)
     if not blocks or blocks[0][0]!='h1':raise ValueError('원고 첫 블록에 # 제목이 필요합니다.')
     title=blocks.pop(0)[1]
@@ -238,7 +241,7 @@ def build(source,output,style_name,fonts,roots,label='르테 뉴스 편집국'):
     for pi,ratios in enumerate(doc.page_fill):
         if pi>0 and sum(ratios)/cols<0.18:warnings.append(f'sparse_page_{pi+1}')
     hits=[ln.strip()[:120] for ln in text.splitlines() if INTERNAL_NOTE_RE.match(ln)]
-    return {'style':style_name,'pages':doc.page,'images':images,'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'filename':output.name,'bytes':output.stat().st_size,'sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'visual_review':'required','renderer':'newsroom-20261124-v2.2','layout':{'page_fill':doc.page_fill,'warnings':warnings},'checks':{'internal_note_hits':hits[:5]}}
+    return {'style':style_name,'pages':doc.page,'images':images,'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'filename':output.name,'bytes':output.stat().st_size,'sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'visual_review':'required','renderer':'newsroom-20261124-v2.3','layout':{'page_fill':doc.page_fill,'warnings':warnings},'checks':{'internal_note_hits':hits[:5]}}
 
 def main():
     ap=argparse.ArgumentParser()
