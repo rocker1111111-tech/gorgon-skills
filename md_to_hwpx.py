@@ -251,6 +251,8 @@ def main():
     out_dir.mkdir(exist_ok=True)
     out_path = out_dir / (name + '.hwpx')
     doc.save_to_path(str(out_path))
+    from newsroom_document_styles import style_hwpx
+    style_hwpx(out_path, blocks)
 
     try:
         errs = doc.validate()
