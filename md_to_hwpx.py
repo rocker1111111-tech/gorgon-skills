@@ -193,7 +193,7 @@ def main():
     if not blocks:
         raise SystemExit('변환할 본문이 없습니다.')
 
-    doc = hwpx.HwpxDocument.new()
+    doc = hwpx.HwpxDocument.new(inherit_style=False)
     counts = {'h1': 0, 'h2': 0, 'h3': 0, 'subtitle': 0, 'para': 0, 'quote': 0,
               'table': 0, 'pagebreak': 0, 'image': 0, 'placeholder': 0}
     for kind, payload in blocks:
@@ -253,11 +253,11 @@ def main():
     doc.save_to_path(str(out_path))
     from newsroom_document_styles import style_hwpx
     style_hwpx(out_path, blocks)
+    doc = hwpx.HwpxDocument.open(str(out_path))
 
-    try:
-        errs = doc.validate()
-    except Exception:
-        errs = None
+    errs = doc.validate()
+    if getattr(errs, 'issues', ()):
+        raise RuntimeError('생성 HWPX 검증 실패: ' + str(errs))
     size = out_path.stat().st_size
     print('변환 완료: ' + out_path.name)
     print('크기: %d바이트' % size)
