@@ -30,7 +30,8 @@ def parse(text):
                 rows.append(lines[i].strip());i+=1
             cells=[[c.strip() for c in r.strip('|').split('|')] for r in rows]
             cells=[r for r in cells if not all(re.fullmatch(r':?-{2,}:?',c) for c in r)]
-            result.append(('table',cells));continue
+            if cells:result.append(('table',cells))
+            continue
         if line.startswith('> '):result.append(('quote',line[2:]));continue
         if re.fullmatch(r'\*\*.+\*\*',line):result.append(('deck',line[2:-2]));continue
         paragraph=[line]
