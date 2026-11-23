@@ -82,10 +82,10 @@ def build(source,output,style_name,fonts,roots,label='르테 뉴스 편집국'):
     pdfmetrics.registerFontFamily('NR',normal='NR',bold='NB',italic='NR',boldItalic='NB')
     pdfmetrics.registerFontFamily('NS',normal='NS',bold='NSB',italic='NS',boldItalic='NSB')
     cfg={'classic':(A3,3,11.3,16.9,34,'#fcfbf7','르테 주간'),
-         'weekly':(landscape(A4),3,10.5,15.5,29,'#ffffff','르테 위클리'),
-         'magazine':(A4,1,12.2,19.2,33,'#fffaf6','RTE  /  INSIGHT')}[style_name]
+         'weekly':(A4,2,10.5,15.5,27,'#fffefa','르테 위클리'),
+         'magazine':(A4,2,11.2,17.4,33,'#fffafc','르테 매거진')}[style_name]
     (w,h),cols,fs,leading,ts,paper,masthead=cfg
-    margin=38 if style_name!='magazine' else 50
+    margin=38
     gap=22;full=w-2*margin;cw=(full-gap*(cols-1))/cols
     red=HexColor('#8d1827');ink=HexColor('#1b2027');grey=HexColor('#59616a')
     def st(name,size=fs,font='NR',**kw):
@@ -177,4 +177,3 @@ def main():
     print(json.dumps(receipt,ensure_ascii=False))
 
 if __name__=='__main__':main()
-
