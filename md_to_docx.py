@@ -32,6 +32,23 @@ def esc(t):
     return (t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
 
 
+LINKS = []
+
+
+def inline_runs(text, rpr):
+    pieces = []; pos = 0
+    for match in re.finditer(r'\[([^\]]+)\]\((https?://[^)]+)\)', text):
+        if match.start() > pos:
+            pieces.append('<w:r>%s<w:t xml:space="preserve">%s</w:t></w:r>' % (rpr, esc(text[pos:match.start()])))
+        rid = 'rIdLink%d' % (len(LINKS) + 1)
+        LINKS.append((rid, match.group(2)))
+        pieces.append('<w:hyperlink r:id="%s"><w:r>%s<w:t>%s</w:t></w:r></w:hyperlink>' % (rid, rpr, esc(match.group(1))))
+        pos = match.end()
+    if pos < len(text):
+        pieces.append('<w:r>%s<w:t xml:space="preserve">%s</w:t></w:r>' % (rpr, esc(text[pos:])))
+    return ''.join(pieces)
+
+
 def para(text, sz=None, bold=False, center=False, color=None, indent=None, page_break=False):
     run = ''
     if text:
@@ -40,7 +57,7 @@ def para(text, sz=None, bold=False, center=False, color=None, indent=None, page_
             rpr = '<w:rPr>' + ('<w:b/>' if bold else '') + (
                 '<w:color w:val="%s"/>' % color if color else '') + (
                 '<w:sz w:val="%d"/><w:szCs w:val="%d"/>' % (sz, sz) if sz else '') + '</w:rPr>'
-        run = '<w:r>%s<w:t xml:space="preserve">%s</w:t></w:r>' % (rpr, esc(text))
+        run = inline_runs(text, rpr)
     if not run and not (page_break or center or indent):
         return '<w:p/>'
     p = ['<w:p>']
@@ -168,6 +185,8 @@ def main():
     document = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
                 '<w:document %s %s %s %s %s><w:body>%s</w:body></w:document>'
                 % (W, R, WP, A, PIC, ''.join(body)))
+    for rid, url in LINKS:
+        rels.append('<Relationship Id="%s" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="%s" TargetMode="External"/>' % (rid, esc(url).replace('"', '&quot;')))
     doc_rels = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
                 '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
                 '<Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/'
