@@ -253,6 +253,7 @@ def main():
     c=json.loads(config.read_text(encoding='utf-8'));roots=[Path(p).resolve() for p in c['input_roots']]
     source=scoped_path(a.source,roots)
     if source.suffix.lower() not in ('.md','.txt','.markdown'):raise ValueError('마크다운 원고만 지원합니다.')
+    source_raw=source.read_bytes();source_sha=hashlib.sha256(source_raw).hexdigest()  # build 전 입력 원고 캡처
     name=re.sub(r'[\\/:*?"<>|\x00-\x1f]','_',a.name or source.stem+'-'+a.style)[:100].removesuffix('.pdf')
     out=Path.cwd()/'output';out.mkdir(exist_ok=True)
     target=out/(name+'.pdf');temporary=out/(name+'.part')
@@ -260,7 +261,13 @@ def main():
         receipt=build(source,temporary,a.style,Path(c['fonts']),roots,c.get('label','르테 뉴스 편집국'))
         if receipt['layout']['warnings'] and not a.allow_sparse_pages:
             raise ValueError('거의 빈 면이 감지됐습니다: '+', '.join(receipt['layout']['warnings'])+'. 불필요한 면 나눔·내부 편집 기록을 정리하고 원고를 다시 검수하세요. 짧은 독립면을 사용자가 명시한 경우만 --allow-sparse-pages를 사용합니다.')
+        if receipt.get('source_sha256')!=source_sha or hashlib.sha256(source.read_bytes()).hexdigest()!=source_sha:
+            raise ValueError('조판 중 입력 원고가 변경됐습니다. 출력 없이 중단합니다.')
+        receipt['source_sha256']=source_sha  # 재조회SHA 일치검사 통과 후 영수증에 기록
         temporary.replace(target);receipt['filename']=target.name
+        # 검수·pin 결속: build 전 캡처한 원본 원고를 PDF와 함께 동시 산출(v2.3 조판 로직 무변경)
+        md_target=out/(name+'.md');md_target.write_bytes(source_raw)
+        receipt['manuscript_md']={'filename':md_target.name,'bytes':md_target.stat().st_size,'sha256':source_sha}
     except Exception:
         temporary.unlink(missing_ok=True);raise
     logs=Path.cwd()/'receipts';logs.mkdir(exist_ok=True)
